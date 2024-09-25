@@ -1,7 +1,9 @@
+require('dotenv').config();
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser"); //use for convert json format to javaScript
 const cors = require("cors");
+
 
 const app = express();
 
@@ -54,25 +56,14 @@ app.use("/api/supplierorder", SupplierOrderRoutes);
 
 app.use(attendRoutes);
 
-const PORT = 8000; // sever port
-// const DB_URL = `mongodb+srv://Admin:admin321@project.0tb9c.mongodb.net/highGarden_Db?retryWrites=true&w=majority`;
-const DB_URL = `mongodb+srv://admin:X5lNCJY7mFkgsTiI@timetable-management.wk03sxf.mongodb.net/highGarden_Db?retryWrites=true&w=majority`;
+// Define DB_URL from environment variables
+const DB_URL = process.env.DB_URL;
 
-//crate options
 mongoose.connect(DB_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  useFindAndModify: false,
-});
-
-//db Connection
-mongoose
-  .connect(DB_URL)
-  .then(() => {
-    console.log("MongoDB Connected!");
-  })
-  .catch((err) => console.log("DB Connection Error!", err));
-
-app.listen(PORT, () => {
-  console.log(`App is running on ${PORT}`);
+}).then(() => {
+  console.log("MongoDB Connected!");
+}).catch((err) => {
+  console.log("DB Connection Error!", err);
 });

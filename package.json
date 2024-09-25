@@ -11,14 +11,17 @@
   "author": "ipl",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^1.7.7",
     "body-parser": "^1.19.0",
     "chart.js": "^3.2.1",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.17.1",
+    "html2canvas": "^1.0.0-rc.7",
     "mongoose": "^5.12.4",
-    "nodemon": "^2.0.7",
-    "react-chartjs-2": "^3.0.3",
-    "html2canvas": "^1.0.0-rc.7"
+    "react-chartjs-2": "^3.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
   }
 }
