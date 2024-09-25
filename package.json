@@ -18,7 +18,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.17.1",
     "html2canvas": "^1.0.0-rc.7",
-    "mongoose": "^5.12.4",
+    "mongoose": "^8.6.3",
     "react-chartjs-2": "^3.0.3"
   },
   "devDependencies": {

@@ -1,9 +1,8 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser"); //use for convert json format to javaScript
 const cors = require("cors");
-
 
 const app = express();
 
@@ -56,14 +55,14 @@ app.use("/api/supplierorder", SupplierOrderRoutes);
 
 app.use(attendRoutes);
 
-// Define DB_URL from environment variables
-const DB_URL = process.env.DB_URL;
-
-mongoose.connect(DB_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => {
-  console.log("MongoDB Connected!");
-}).catch((err) => {
-  console.log("DB Connection Error!", err);
-});
+mongoose
+  .connect(process.env.DB_URL)
+  .then(() => {
+    app.listen(process.env.PORT, () => {
+      console.log("connected to db & listening on port", process.env.PORT);
+    });
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+ 
