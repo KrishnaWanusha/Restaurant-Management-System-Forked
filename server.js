@@ -10,13 +10,14 @@ const app = express();
 
 // JWT authentication
 const authenticateToken = (req, res, next) => {
-  const token = req.headers["authorization"];
-  if (!token) return res.sendStatus(401);
+  const authHeader = req.headers["authorization"];
+  if (!authHeader) return res.sendStatus(401);
 
+  const token = authHeader.split(" ")[1];
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403); 
+    if (err) return res.sendStatus(403);
     req.user = user;
-    next(); 
+    next();
   });
 };
 
@@ -24,7 +25,7 @@ const authenticateToken = (req, res, next) => {
 const authorizeRole = (role) => {
   return (req, res, next) => {
     if (req.user.role !== role) {
-      return res.status(403).send('Access Denied'); 
+      return res.status(403).send("Access Denied");
     }
     next();
   };
@@ -45,28 +46,55 @@ const supplierRoutes = require("./routes/Supplier-routes");
 //supplier orders route
 const SupplierOrderRoutes = require("./routes/Supplier-order-routes");
 const attendRoutes = require("./routes/attends");
+const userRoutes = require("./routes/user");
 //app middleware
 app.use(bodyParser.json());
 app.use(cors());
 
+app.use((req, res, next) => {
+  console.log(req.path, req.method);
+  next();
+});
+
 //role based authentication
-app.use("/employees", authenticateToken, authorizeRole('admin'), employeeRoutes);
-app.use("/records", authenticateToken, authorizeRole('admin'), recordRoutes);
-app.use("/bills", authenticateToken, authorizeRole('manager'), billRoutes);
-app.use("/orders", authenticateToken, authorizeRole('manager'), orderRoutes);
-app.use("/items", authenticateToken, authorizeRole('manager'), itemRoutes);
-app.use("/drivers", authenticateToken, authorizeRole('admin'), driverRouter);
-app.use("/vehicles", authenticateToken, authorizeRole('admin'), vehicleRouter);
-app.use("/deliveries", authenticateToken, authorizeRole('admin'), deliveryRouter);
+app.use(
+  "/employees",
+  authenticateToken,
+  authorizeRole("admin"),
+  employeeRoutes
+);
+app.use("/records", authenticateToken, authorizeRole("admin"), recordRoutes);
+app.use("/bills", authenticateToken, authorizeRole("manager"), billRoutes);
+app.use("/orders", authenticateToken, authorizeRole("employee"), orderRoutes);
+app.use("/items", authenticateToken, authorizeRole("manager"), itemRoutes);
+app.use("/drivers", authenticateToken, authorizeRole("admin"), driverRouter);
+app.use("/vehicles", authenticateToken, authorizeRole("admin"), vehicleRouter);
+app.use(
+  "/deliveries",
+  authenticateToken,
+  authorizeRole("admin"),
+  deliveryRouter
+);
 {
   /** end of delivery */
 }
 app.use("/posts", authenticateToken, postRoutes);
 
-app.use("/api/supplier", authenticateToken, authorizeRole('admin'), supplierRoutes);
-app.use("/api/supplierorder", authenticateToken, authorizeRole('manager'), SupplierOrderRoutes);
-app.use("/attends", authenticateToken, authorizeRole('employee'), attendRoutes);
+app.use(
+  "/api/supplier",
+  authenticateToken,
+  authorizeRole("admin"),
+  supplierRoutes
+);
+app.use(
+  "/api/supplierorder",
+  authenticateToken,
+  authorizeRole("manager"),
+  SupplierOrderRoutes
+);
+app.use("/attends", authenticateToken, authorizeRole("employee"), attendRoutes);
 
+app.use(userRoutes);
 
 mongoose
   .connect(process.env.DB_URL)
@@ -78,4 +106,3 @@ mongoose
   .catch((error) => {
     console.log(error);
   });
- 

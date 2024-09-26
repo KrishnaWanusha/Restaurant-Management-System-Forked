@@ -1,10 +1,6 @@
 const router = require("express").Router();
 let Vehicle = require("../models/Vehicle");
 
-/*******************     Insert data to database     ******************/
-
-//localhost:8075/vehicle/add_vehicle
-
 router.post(`/vehicle/add_vehicle`, (req, res) => {
   let newVehicle = new Vehicle(req.body);
   newVehicle.save((err) => {
@@ -18,13 +14,7 @@ router.post(`/vehicle/add_vehicle`, (req, res) => {
   });
 });
 
-/**************************************************************/
-
-/************************     Retreive Data     ***********************/
-
-//localhost:8000/vehicle/
-
-http: router.get("/display_vehicle", (req, res) => {
+router.get("/display_vehicle", (req, res) => {
   Vehicle.find().exec((err, vehicle) => {
     if (err) {
       return res.status(400).json({

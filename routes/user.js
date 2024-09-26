@@ -1,12 +1,10 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const passwordStrengthValidator = require("password-strength-validator");
+const owasp = require("owasp-password-strength-test");
 const rateLimit = require("express-rate-limit");
+const bcrypt = require("bcrypt");
 const router = express.Router();
-
-// Secret key for signing the JWT
-const JWT_SECRET = process.env.JWT_SECRET;
 
 // Rate limiter to prevent brute-force attacks
 const loginLimiter = rateLimit({
@@ -23,7 +21,7 @@ router.post("/login", loginLimiter, async (req, res) => {
   const { empID, password } = req.body;
 
   // throw an error if secret not loaded through env
-  if (!JWT_SECRET)
+  if (!process.env.ACCESS_TOKEN_SECRET)
     throw new Error("Something went wrong with environment variables");
 
   // Check if the user exists
@@ -40,9 +38,9 @@ router.post("/login", loginLimiter, async (req, res) => {
 
   // Generate JWT token
   const token = jwt.sign(
-    { empID: user.empID, id: user._id }, // Payload
-    JWT_SECRET, // Secret key
-    { expiresIn: "1h" } // Token expiration time (1 hour)
+    { empID: user.empID, id: user._id, role: user.role }, // Payload
+    process.env.ACCESS_TOKEN_SECRET, // Secret key
+    { expiresIn: "7d" } // Token expiration time (7 days)
   );
 
   // Respond with the token and success message
@@ -57,7 +55,7 @@ router.post("/register", async (req, res) => {
 
   try {
     // A07: Check if the password is weak
-    if (!passwordStrengthValidator(password)) {
+    if (!owasp.test(password).strong) {
       return res.status(400).send("Password is too weak");
     }
 
@@ -68,15 +66,10 @@ router.post("/register", async (req, res) => {
         .status(400)
         .json({ message: "User with this empID already exists" });
     }
-
-    // Hash the password before saving
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
     // Create a new user
     const newUser = new User({
       empID,
-      password: hashedPassword, // Save the hashed password, not the plain text
+      password, // Save the hashed password, not the plain text
     });
 
     // Save the user to the database
