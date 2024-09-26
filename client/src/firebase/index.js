@@ -1,15 +1,19 @@
 import firebase from "firebase/app";
 import "firebase/storage";
+import dotenv from "dotenv";
 
-// Your web app's Firebase configuration
+dotenv.config();
+
+// Firebase configuration from environment variables
 var firebaseConfig = {
-    apiKey: "AIzaSyCRNiOTETug4mIa5ib4U5zOWZvh7twqPgs",
-    authDomain: "inventory-2897b.firebaseapp.com",
-    projectId: "inventory-2897b",
-    storageBucket: "inventory-2897b.appspot.com",
-    messagingSenderId: "359584693941",
-    appId: "1:359584693941:web:415ad04c9208c8722048fc"
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
+
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
