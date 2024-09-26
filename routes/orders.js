@@ -1,21 +1,31 @@
 const express = require('express');
-
 const Orders = require('../models/orders');
+const Joi = require('joi'); 
 
 const router = express.Router();
+// Order validation schema using Joi
+const orderSchema = Joi.object({
+    name: Joi.string().required(),
+    phone: Joi.string().required(),
+    email: Joi.string().required(),
+    // quantity: Joi.number().integer().min(1).required(),
+    // price: Joi.number().required(),
+  
+});
+
 //save Order
 router.post(`/order/save`,(req,res)=>{
+    const { error } = orderSchema.validate(req.body);  
+    if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+    }
+    
     let newOrder = new Orders(req.body);
-    newOrder.save((err) =>{
-        if(err){
-            return res.status(400).json({
-error:err
-            });
+    newOrder.save((err) => {
+        if (err) {
+            return res.status(400).json({ error: err });
         }
-       // alert("Order Saved success");
-        return res.status(200).json({
-            success:"Order Saved success"
-        });
+        return res.status(200).json({ success: "Order Saved successfully" });
     });
 });
 
