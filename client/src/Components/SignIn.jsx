@@ -89,7 +89,9 @@ export default class CreateBill extends Component {
                                     <div className="col-3"></div>
                                     <div className="form-group btndriver col-6">
                                         <div className="form-group signin" style={{ marginTop: '15px' }}>
-                                            <button type="submit" className="btn btn-outline-success">Sign In</button>&nbsp;&nbsp;                                            
+                                            <button type="submit" className="btn btn-outline-success">Sign In</button>&nbsp;&nbsp; 
+                                            <button class="flex items-center bg-white dark:bg-gray-900 border border-gray-300 rounded-lg shadow-md px-6 py-2 text-sm font-medium text-gray-800 dark:text-white hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                                            <span className='text-dark'>Continue with Google</span></button>                                           
                                         </div>
                                     </div>
                                     <div className="col-3"></div>
