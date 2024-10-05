@@ -25,15 +25,50 @@ const SupplierOrderRoutes = require("./routes/Supplier-order-routes");
 const attendRoutes = require("./routes/attends");
 const userRoutes = require("./routes/user");
 
+const app = express();
+
 function isLoggedIn(req, res, next) {
   req.user ? next() : res.sendStatus(401);
 }
 
-const app = express();
-
-app.use(session({ secret: "ssd", resave: false, saveUninitialized: true }));
+app.use(session({ secret: "cats", resave: false, saveUninitialized: true }));
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["email", "profile"] })
+);
+
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    successRedirect: "/protected",
+    failureRedirect: "/auth/google/failure",
+  })
+);
+
+app.get("/protected", isLoggedIn, (req, res) => {
+  res.send(`Hello ${req.user.displayName}`);
+});
+
+app.get("/auth/failure", (req, res) => {
+  res.send("Login failed!");
+});
+
+app.get("/logout", (req, res, next) => {
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    req.session.destroy(function (err) {
+      if (err) {
+        return next(err);
+      }
+      res.send("Logout success");
+    });
+  });
+});
 
 // JWT authentication
 const authenticateToken = (req, res, next) => {
@@ -98,29 +133,6 @@ app.use(
 app.use("/attends", authenticateToken, authorizeRole("employee"), attendRoutes);
 
 app.use(userRoutes);
-
-app.use(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["email", "profile"] })
-);
-
-app.use(
-  "/auth/google/callback",
-  passport.authenticate("google", {
-    successRedirect: "/",
-    failureRedirect: "/auth/failure",
-  })
-);
-
-app.get("/auth/failure", (req, res) => {
-  res.send("Login failed!");
-});
-
-app.get("/logout", (req, res) => {
-  req.logout();
-  req.session.destroy();
-  res.send("logout success");
-});
 
 mongoose
   .connect(process.env.DB_URL)
