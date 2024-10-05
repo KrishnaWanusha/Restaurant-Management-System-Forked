@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import "./signIn.css";
+import axios from "axios";
 
 export default class CreateBill extends Component {
   constructor(props) {
@@ -7,6 +8,7 @@ export default class CreateBill extends Component {
     this.state = {
       userName: "",
       pass: "",
+      isAuthenticated: false,
       formErrors: {
         userName: "",
         pass: "",
@@ -14,36 +16,50 @@ export default class CreateBill extends Component {
     };
   }
 
+  // Handle input change
   handleInputChange = (e) => {
     const { name, value } = e.target;
     let formErrors = this.state.formErrors;
+
     switch (name) {
       case "userName":
         formErrors.userName =
-          value.length < 5 ? "Minimum charchter must be 5" : "";
+          value.length < 5 ? "Minimum characters must be 5" : "";
         break;
       case "pass":
         formErrors.pass =
           value.length < 8 || value.length > 30
-            ? "Password must have minimum 8 charchters"
+            ? "Password must have between 8 and 30 characters"
             : "";
         break;
       default:
         break;
     }
-    this.setState({ formErrors, [name]: value }, () => console.log(this.state));
-    this.setState({
-      ...this.state,
-      [name]: value,
-    });
+
+    this.setState({ formErrors, [name]: value });
   };
 
+  // Redirect user to Google OAuth
   handleGoogleSignIn = (e) => {
     e.preventDefault();
     window.location.href = "http://localhost:5000/auth/google";
   };
+
+  // Check authentication status after component mounts
+  componentDidMount() {
+    axios
+      .get("http://localhost:5000/auth/status", { withCredentials: true }) // Include credentials to check the session
+      .then((res) => {
+        this.setState({ isAuthenticated: res.data.isAuthenticated });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+
   render() {
-    const { formErrors } = this.state;
+    const { formErrors, isAuthenticated } = this.state;
+
     return (
       <div className="container containerTop">
         <div className="row">
@@ -54,16 +70,18 @@ export default class CreateBill extends Component {
           <div className="col-6">
             <div className="shadowBoxLogin">
               <div className="row">
-                <h3 className="h3">Sign In</h3>
+                <h3 className="h3">
+                  {isAuthenticated ? "Welcome Back!" : "Sign In"}
+                </h3>
               </div>
               <form>
-                <div class="form-group textbox">
-                  <label for="name" className="label">
+                <div className="form-group textbox">
+                  <label htmlFor="name" className="label">
                     User Name :{" "}
                   </label>
-                  <div class="input-group  position-relative">
-                    <div class="input-group-addon">
-                      <i class="fas fa-user icon"></i>
+                  <div className="input-group position-relative">
+                    <div className="input-group-addon">
+                      <i className="fas fa-user icon"></i>
                     </div>
                     <input
                       type="text"
@@ -75,14 +93,17 @@ export default class CreateBill extends Component {
                       required
                     />
                   </div>
+                  {formErrors.userName && (
+                    <span className="errorMessage">{formErrors.userName}</span>
+                  )}
                 </div>
-                <div class="form-group textbox">
-                  <label for="name" className="label">
+                <div className="form-group textbox">
+                  <label htmlFor="name" className="label">
                     Password :{" "}
                   </label>
-                  <div class="input-group  position-relative">
-                    <div class="input-group-addon">
-                      <i class="fas fa-key icon"></i>
+                  <div className="input-group position-relative">
+                    <div className="input-group-addon">
+                      <i className="fas fa-key icon"></i>
                     </div>
                     <input
                       type="password"
@@ -94,6 +115,9 @@ export default class CreateBill extends Component {
                       required
                     />
                   </div>
+                  {formErrors.pass && (
+                    <span className="errorMessage">{formErrors.pass}</span>
+                  )}
                 </div>
                 <div className="row">
                   <div className="col-3"></div>
@@ -107,19 +131,20 @@ export default class CreateBill extends Component {
                       </button>
                       &nbsp;&nbsp;
                     </div>
-                    <div
-                      className="form-group signin"
-                      style={{ marginTop: "15px" }}
-                    >
-                      <button
-                        type="submit"
-                        onClick={this.handleGoogleSignIn}
-                        className="btn btn-outline-success"
+                    {!isAuthenticated && (
+                      <div
+                        className="form-group signin"
+                        style={{ marginTop: "15px" }}
                       >
-                        Sign up with Google
-                      </button>
-                      &nbsp;&nbsp;
-                    </div>
+                        <button
+                          onClick={this.handleGoogleSignIn}
+                          className="btn btn-outline-success"
+                        >
+                          Sign in with Google
+                        </button>
+                        &nbsp;&nbsp;
+                      </div>
+                    )}
                   </div>
                   <div className="col-3"></div>
                 </div>

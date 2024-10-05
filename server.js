@@ -27,6 +27,22 @@ const userRoutes = require("./routes/user");
 
 const app = express();
 
+//app middleware
+app.use(bodyParser.json());
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Your frontend URL
+    credentials: true, // Allow sending cookies and credentials
+  })
+);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use((req, res, next) => {
+  console.log(req.path, req.method);
+  next();
+});
+
 function isLoggedIn(req, res, next) {
   req.user ? next() : res.sendStatus(401);
 }
@@ -43,10 +59,18 @@ app.get(
 app.get(
   "/auth/google/callback",
   passport.authenticate("google", {
-    successRedirect: "/protected",
+    successRedirect: "http://localhost:3000/",
     failureRedirect: "/auth/google/failure",
   })
 );
+
+app.get("/auth/status", (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json({ isAuthenticated: true, user: req.user });
+  } else {
+    res.json({ isAuthenticated: false });
+  }
+});
 
 app.get("/protected", isLoggedIn, (req, res) => {
   res.send(`Hello ${req.user.displayName}`);
@@ -93,17 +117,13 @@ const authorizeRole = (role) => {
   };
 };
 
-//app middleware
-app.use(bodyParser.json());
-app.use(cors());
-
-app.use((req, res, next) => {
-  console.log(req.path, req.method);
-  next();
-});
-
 //role based authentication
-app.use("/employees", isLoggedIn, authorizeRole("admin"), employeeRoutes);
+app.use(
+  "/employees",
+  authenticateToken,
+  authorizeRole("admin"),
+  employeeRoutes
+);
 app.use("/records", authenticateToken, authorizeRole("admin"), recordRoutes);
 app.use("/bills", authenticateToken, authorizeRole("manager"), billRoutes);
 app.use("/orders", authenticateToken, authorizeRole("employee"), orderRoutes);
@@ -116,7 +136,7 @@ app.use(
   authorizeRole("admin"),
   deliveryRouter
 );
-app.use("/posts", authenticateToken, postRoutes);
+app.use("/post", isLoggedIn, postRoutes);
 
 app.use(
   "/api/supplier",

@@ -39,7 +39,25 @@ export default class CreateStock extends Component {
         supId: "",
         sOrderId: "",
       },
+      isAuthenticated: false, // Add authentication state
+      loading: true, // Add loading state
     };
+  }
+
+  componentDidMount() {
+    // Check if the user is authenticated when the component mounts
+    axios
+      .get("http://localhost:5000/auth/status", { withCredentials: true })
+      .then((res) => {
+        this.setState({
+          isAuthenticated: res.data.isAuthenticated,
+          loading: false,
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+        this.setState({ isAuthenticated: false, loading: false });
+      });
   }
 
   handleInputChange = (e) => {
@@ -72,7 +90,7 @@ export default class CreateStock extends Component {
     });
   };
 
-  onSubmit = (e) => {
+  onSubmit = async (e) => {
     e.preventDefault();
 
     if (!formValid(this.state.formErrors)) {
@@ -113,25 +131,27 @@ export default class CreateStock extends Component {
 
     console.log(data);
 
-    axios.post("http://localhost:5000/post/save", data).then((res) => {
-      if (res.data.success) {
-        alert("New stock added successfuly");
-        this.setState({
-          stockId: stockId,
-          stockType: stockType,
-          brand: brand,
-          category: category,
-          amount: amount,
-          rcvQuan: rcvQuan,
-          remQuan: remQuan,
-          rcvDate: rcvDate,
-          expDate: expDate,
-          location: location,
-          supId: supId,
-          sOrderId: sOrderId,
-        });
-      }
-    });
+    await axios
+      .post("http://localhost:5000/post/save", data, { withCredentials: true })
+      .then((res) => {
+        if (res.data.success) {
+          alert("New stock added successfully");
+          this.setState({
+            stockId: stockId,
+            stockType: stockType,
+            brand: brand,
+            category: category,
+            amount: amount,
+            rcvQuan: rcvQuan,
+            remQuan: remQuan,
+            rcvDate: rcvDate,
+            expDate: expDate,
+            location: location,
+            supId: supId,
+            sOrderId: sOrderId,
+          });
+        }
+      });
   };
 
   uploadImage(e) {
@@ -170,7 +190,18 @@ export default class CreateStock extends Component {
   }
 
   render() {
-    const { formErrors } = this.state;
+    const { formErrors, isAuthenticated, loading } = this.state;
+
+    // Show loading while checking authentication
+    if (loading) {
+      return <div>Loading...</div>;
+    }
+
+    // If not authenticated, show error message
+    if (!isAuthenticated) {
+      return <div>You must be logged in using OAuth to view this page.</div>;
+    }
+
     return (
       <div class="row">
         <div className="col-md-6">
