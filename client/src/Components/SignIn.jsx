@@ -131,20 +131,18 @@ export default class CreateBill extends Component {
                       </button>
                       &nbsp;&nbsp;
                     </div>
-                    {!isAuthenticated && (
-                      <div
-                        className="form-group signin"
-                        style={{ marginTop: "15px" }}
+                    <div
+                      className="form-group signin"
+                      style={{ marginTop: "15px" }}
+                    >
+                      <button
+                        onClick={this.handleGoogleSignIn}
+                        className="btn btn-outline-success"
                       >
-                        <button
-                          onClick={this.handleGoogleSignIn}
-                          className="btn btn-outline-success"
-                        >
-                          Sign in with Google
-                        </button>
-                        &nbsp;&nbsp;
-                      </div>
-                    )}
+                        Sign in with Google
+                      </button>
+                      &nbsp;&nbsp;
+                    </div>
                   </div>
                   <div className="col-3"></div>
                 </div>

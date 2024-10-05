@@ -27,6 +27,29 @@ const userRoutes = require("./routes/user");
 
 const app = express();
 
+// JWT authentication
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  if (!authHeader) return res.sendStatus(401);
+  const token = authHeader.split(" ")[1];
+
+  if (token === "null") return res.sendStatus(401);
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+};
+
+// Middleware for role-based authorization
+const authorizeRole = (role) => {
+  return (req, res, next) => {
+    if (req.user.role !== role) {
+      return res.status(403).send("Access Denied");
+    }
+    next();
+  };
+};
 //app middleware
 app.use(bodyParser.json());
 app.use(
@@ -58,10 +81,18 @@ app.get(
 
 app.get(
   "/auth/google/callback",
-  passport.authenticate("google", {
-    successRedirect: "http://localhost:3000/",
-    failureRedirect: "/auth/google/failure",
-  })
+  passport.authenticate("google", { failureRedirect: "/auth/google/failure" }),
+  (req, res) => {
+    const token = jwt.sign(
+      { empID: req.user._id, id: req.user._id, role: "employee" },
+      process.env.ACCESS_TOKEN_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    res.redirect(`http://localhost:3000/?token=${token}`);
+  }
 );
 
 app.get("/auth/status", (req, res) => {
@@ -72,7 +103,7 @@ app.get("/auth/status", (req, res) => {
   }
 });
 
-app.get("/protected", isLoggedIn, (req, res) => {
+app.get("/protected", authenticateToken, (req, res) => {
   res.send(`Hello ${req.user.displayName}`);
 });
 
@@ -94,29 +125,6 @@ app.get("/logout", (req, res, next) => {
   });
 });
 
-// JWT authentication
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader) return res.sendStatus(401);
-
-  const token = authHeader.split(" ")[1];
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-};
-
-// Middleware for role-based authorization
-const authorizeRole = (role) => {
-  return (req, res, next) => {
-    if (req.user.role !== role) {
-      return res.status(403).send("Access Denied");
-    }
-    next();
-  };
-};
-
 //role based authentication
 app.use(
   "/employees",
@@ -136,7 +144,7 @@ app.use(
   authorizeRole("admin"),
   deliveryRouter
 );
-app.use("/post", isLoggedIn, postRoutes);
+app.use("/post", authenticateToken, postRoutes);
 
 app.use(
   "/api/supplier",

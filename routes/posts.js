@@ -4,34 +4,32 @@ const Posts = require("../models/posts");
 const router = express.Router();
 
 //Save posts
-router.post("/save", (req, res) => {
-  let newPost = new Posts(req.body);
-
-  newPost.save((err) => {
-    if (err) {
-      return res.status(400).json({
-        error: err,
-      });
-    }
+router.post("/save", async (req, res) => {
+  try {
+    let newPost = new Posts(req.body);
+    await newPost.save(); // Save the post without callback
     return res.status(200).json({
       success: "Posts saved successfully",
     });
-  });
+  } catch (err) {
+    return res.status(400).json({
+      error: err.message,
+    });
+  }
 });
-
 //Get posts
-router.get("/posts", (req, res) => {
-  Posts.find().exec((err, posts) => {
-    if (err) {
-      return res.status(400).json({
-        error: err,
-      });
-    }
+router.get("/", async (req, res) => {
+  try {
+    const posts = await Posts.find(); // Use async/await instead of exec with callback
     return res.status(200).json({
       success: true,
       existingPosts: posts,
     });
-  });
+  } catch (err) {
+    return res.status(400).json({
+      error: err,
+    });
+  }
 });
 
 //Update posts

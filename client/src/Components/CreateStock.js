@@ -130,9 +130,15 @@ export default class CreateStock extends Component {
     };
 
     console.log(data);
+    const authToken = localStorage.getItem("authToken"); // Get token from localStorage
 
     await axios
-      .post("http://localhost:5000/post/save", data, { withCredentials: true })
+      .post("http://localhost:5000/post/save", data, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${authToken}`, // Pass token in Authorization header
+        },
+      })
       .then((res) => {
         if (res.data.success) {
           alert("New stock added successfully");
@@ -195,11 +201,6 @@ export default class CreateStock extends Component {
     // Show loading while checking authentication
     if (loading) {
       return <div>Loading...</div>;
-    }
-
-    // If not authenticated, show error message
-    if (!isAuthenticated) {
-      return <div>You must be logged in using OAuth to view this page.</div>;
     }
 
     return (

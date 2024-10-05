@@ -49,6 +49,8 @@ const Sidebar = () => {
 
   const showSidebar = () => setSidebar(!sidebar);
 
+  const token = localStorage.getItem("authToken");
+
   return (
     <>
       <IconContext.Provider value={{ color: "#fff" }}>
@@ -68,7 +70,7 @@ const Sidebar = () => {
           </h1>
 
           <a
-            href="/SignIn"
+            href={token ? "/logout" : "/Signin"}
             style={{
               textAlign: "right",
               textDecoration: "none",
@@ -76,7 +78,7 @@ const Sidebar = () => {
               marginLeft: "25%",
             }}
           >
-            Sign In
+            {token ? "Logout" : "Sign In"}
           </a>
         </Nav>
         <SidebarNav sidebar={sidebar}>
